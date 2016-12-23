@@ -17,6 +17,63 @@ module Tiles
 	L = 11
 end
 
+class StageOne
+	attr_reader :width, :height
+	def initialize(filename)
+		@tileset = Gosu::Image.load_tiles("StageOne/StageOne.png", 16, 16, :tileable => true)
+		lines = File.readlines(filename).map { |line| line.chomp }
+		@height = lines.size
+		@width = lines[0].size
+		@tiles = Array.new(@width) do |x|
+		    Array.new(@height) do |y|
+				case lines[y][x, 1]
+				when 'a'
+					Tiles::A
+				when 'b'
+					Tiles::B
+				when 'c'
+					Tiles::C
+				when 'd'
+					Tiles::D
+				when 'e'
+					Tiles::E
+				when 'f'
+					Tiles::F
+				when 'g'
+					Tiles::G
+				when 'h'
+					Tiles::H
+				when 'i'
+					Tiles::I
+				when 'j'
+					Tiles::J
+				when 'k'
+					Tiles::K
+				when 'l'
+					Tiles::L
+				else
+					nil
+				end
+			end
+		end
+	end
+
+	def draw
+		@height.times do |y|
+			@width.times do |x|
+				tile = @tiles[x][y]
+				if tile 
+					@tileset[tile].draw(x * 16, y * 16, 0)
+				end
+			end
+		end
+	end
+
+	def solid?(x,y)
+		y < 0 || @tiles[x / 16][y / 16]
+	end
+end
+
 class MightyAdventure < Gosu::Window
 	def initialize
 		super(256, 224, false)
@@ -39,7 +96,9 @@ class MightyAdventure < Gosu::Window
 		@characterchange_song = Gosu::Sample.new("Sounds/CharacterChange.wav")
 		@title_back_song = Gosu::Sample.new("Sounds/Back.wav")
 
-		@stageone_background
+		@note_song = Gosu::Sample.new("Sounds/Note.wav")
+
+		@stageone_back_song = Gosu::Song.new("Sounds/StageOne.wav")
 
 	end
 
@@ -48,10 +107,12 @@ class MightyAdventure < Gosu::Window
 			draw_begin
 		elsif @status == "characterselect" then
 			draw_characterselect
+		elsif @status == "wait" then
+			draw_wait
 		elsif @status == "note" then
 			draw_note
-#		elsif @status == "stageone" then
-#			draw_stageone
+		elsif @status == "stageone" then
+			draw_stageone
 #		elsif @status == "stagetwo" then
 #			draw_stagetwo
 #		elsif @status == "gameover" then
@@ -69,13 +130,21 @@ class MightyAdventure < Gosu::Window
 		@image.draw(0, 20, 0)
 	end
 
-	def draw_note
-#		@background_image.draw(0, 0, 0)
-#		@note.draw(0, 20, 0)
+	def draw_wait
+		@background_image.draw(0, 0, 0)
 	end
 
-#	def draw_stageone
-#	end
+	def draw_note
+		@background_image.draw(0, 0, 0)
+		@note_image.draw(58, 50, 0)
+	end
+
+	def draw_stageone
+		@background_image.draw( 0, 0, 0)
+#		Gosu::translate(-@camera_x, -@camera_y) do
+			@stage.draw
+#		end
+	end
 
 #	def draw_stagetwo
 #	end
@@ -88,10 +157,12 @@ class MightyAdventure < Gosu::Window
 			update_begin
 		elsif @status == "characterselect" then
 			update_characterselect
+		elsif @status == "wait" then
+			update_wait
 		elsif @status == "note" then
 			update_note
-#		elsif @status == "stageone" then
-#			update_stageone
+		elsif @status == "stageone" then
+			update_stageone
 #		elsif @status == "stagetwo" then
 #			update_stagetwo
 #		elsif @status == "gameover" then
@@ -139,7 +210,8 @@ class MightyAdventure < Gosu::Window
 				@game_start_song.play(false)
 				sleep 0.5
 				#@jogador = ExAid.new()
-				@status = "note"
+				@status = "wait"
+				@background_image = Gosu::Image.new("Note/Wait.png")
 			end	
 		end
 		if @image == @brave_selected_anim then
@@ -155,7 +227,8 @@ class MightyAdventure < Gosu::Window
 				@game_start_song.play(false)
 				sleep 0.5
 				#@jogador = Brave.new()
-				@status = "note"
+				@status = "wait"
+				@background_image = Gosu::Image.new("Note/Wait.png")
 			end	
 		end
 		if @image == @sniper_selected_anim then
@@ -171,7 +244,8 @@ class MightyAdventure < Gosu::Window
 				@game_start_song.play(false)
 				sleep 0.5
 				#@jogador = Sniper.new()
-				@status = "note"
+				@status = "wait"
+				@background_image = Gosu::Image.new("Note/Wait.png")
 			end	
 		end
 		if Gosu::button_down? Gosu::KbSpace then
@@ -183,88 +257,33 @@ class MightyAdventure < Gosu::Window
 		end			
 	end
 
+	def update_wait
+		@note_image = Gosu::Image.new("Note/Note.png")
+		sleep 0.4
+		@status = "note"
+		@note_song.play(1, 1 ,false)
+	end
+
 	def update_note
-#		if @jogador == ExAid.new then 
-#			@note = Gosu::Image.load_tiles(self, "/.png", , , false)
-#		end
-#		if @jogador == Brave.new then 
-#			@note = Gosu::Image.load_tiles(self, "/.png", , , false)
-#		end
-#		if @jogador == Sniper.new then 
-#			@note = Gosu::Image.load_tiles(self, "/.png", , , false)
-#		end
 		if Gosu::button_down? Gosu::KbSpace then
 			close
 		end
-#		if Gosu::button_down? Gosu::KbReturn or Gosu::button_down? Gosu::KbEnter then
-#			@game_start_song.play(false)
-#			@background_image = @stageone_background
-#			@status = "stageone"
-#			@note 
-#			@map = StageOne.new("StageOne/StageOne.txt")
-#		end
+		if Gosu::button_down? Gosu::KbReturn or Gosu::button_down? Gosu::KbEnter then
+			@game_start_song.play(false)
+			sleep 0.5
+			@status = "stageone"
+			@background_image = Gosu::Image.new("StageOne/BackStageOne.png")
+			@stage = StageOne.new("StageOne/StageOne.txt")
+		end
+	end
+
+	def update_stageone
+		@stageone_back_song.play(true)		
 	end
 
 #	def update_gameover
 #	end
 
-end
-
-class StageOne
-	attr_reader :width, :height
-	def initialize(filename)
-		@tileset = Gosu::Image.load_tiles("StageOne/StageOne.png", 16, 16, :tileable => true)
-		lines = File.readlines(filename).map { |line| line.chomp }
-		@height = lines.size
-		@width = lines[0].size
-		@tiles = Array.new(@width) do |x|
-		    Array.new(@height) do |y|
-				case lines[y][x, 1]
-				when 'a'
-					Tiles::A
-				when 'b'
-					Tiles::B
-				when 'c'
-					Tiles::C
-				when 'd'
-					Tiles::D
-				when 'e'
-					Tiles::E
-				when 'f'
-					Tiles::F
-				when 'g'
-					Tiles::G
-				when 'h'
-					Tiles::H
-				when 'i'
-					Tiles::I
-				when 'j'
-					Tiles::J
-				when 'k'
-					Tiles::K
-				when 'l'
-					Tiles::L
-				else
-					nil
-				end
-			end
-		end
-	end
-
-	def draw
-		@height.times do |y|
-			@width.times do |x|
-				tile = @tiles[x][y]
-				if tile 
-					@tileset[tile].draw(x * 16, y * 16)
-				end
-			end
-		end
-	end
-
-	def solid?(x,y)
-		y < 0 || @tiles[x / 16][y / 16]
-	end
 end
 
 

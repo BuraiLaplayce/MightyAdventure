@@ -5,9 +5,15 @@ class Sniper
 		@x, @y = x, y
 		@dir = :left
 		@vy = 0
-		@standing =
+		@standing =Gosu::
 		@right = Gosu::Image.new()
+		@right_anim1 = Gosu::Image.new()
+		@right_anim2 = Gosu::Image.new()
+		@right_anim3 = Gosu::Image.new()
 		@left = Gosu::Image.new()
+		@left_anim1 = Gosu::Image.new()
+		@left_anim2 = Gosu::Image.new()
+		@left_anim3 = Gosu::Image.new()
 		@jump = Gosu::Image.new()
 		@fallen = Gosu::Image.new()
 
@@ -17,10 +23,13 @@ class Sniper
 	end
 
 	def draw
-#		@sprite.draw(@x + offs_x, @y - 49, 0, factor, 1.0)
+
 	end
 
 	def update
+		while Gosu::button_down? Gosu::KbRight do
+			@sprite = @left_anim
+		end
 #		if @life == 30 then
 #			@life = Gosu::Image.new("Miscellaneous/Life Bar/ExAid/Life30.png", :tileable => true)
 #			if @life > 30 then
